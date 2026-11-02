@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a4aa6">
+<title>Aimant PMK / DAI</title>
+<style>
+:root{
+  --bleu:#0a4aa6; --bleu-pale:#e8f0fc;
+  --rouge:#c62828; --rouge-pale:#fdecea; --vert:#2e7d32; --vert-pale:#e8f5e9;
+  --orange:#d35400; --orange-pale:#fff3e0;
+  --fond:#f4f6fa; --carte:#ffffff; --texte:#1a1f2b; --gris:#5b6475; --bord:#d8dee9;
+  --trace:#1a1f2b; --grille:#f3c6c6; --ecg-fond:#fffafa;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bleu:#6aa5ff; --bleu-pale:#16233a;
+    --rouge:#ff6b6b; --rouge-pale:#3a1c1c; --vert:#66bb6a; --vert-pale:#1b2e1c;
+    --orange:#ffa040; --orange-pale:#3a2a14;
+    --fond:#0f131a; --carte:#181e29; --texte:#e7ebf2; --gris:#9aa4b5; --bord:#2a3242;
+    --trace:#7CFC9A; --grille:#1f3a2a; --ecg-fond:#07120c;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:175px}
+html,body{margin:0;padding:0}
+body{background:var(--fond);color:var(--texte);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+header{background:#0a4aa6;color:#fff;padding:16px 14px 14px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) header{background:#0b2a5c}}
+.tete{display:flex;align-items:center;gap:10px;max-width:900px;margin:0 auto}
+.tete-txt{flex:1;min-width:0}
+header h1{margin:0;font-size:1.35rem;font-weight:800;line-height:1.2}
+header p{margin:4px 0 0;font-size:.86rem;opacity:.85}
+.icone{width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.85);flex:0 0 70px}
+nav{display:grid;grid-template-columns:1fr 1fr 1.35fr;gap:6px;max-width:900px;margin:14px auto 0}
+nav a{display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.45);color:#fff;font-size:1rem;font-weight:800;text-decoration:none;padding:10px 6px;border-radius:10px;min-height:46px;line-height:1.15}
+nav a:hover,nav a.on{background:#fff;color:#0a4aa6;border-color:#fff}
+main{max-width:900px;margin:0 auto;padding:16px}
+h2.titre{font-size:1.15rem;color:var(--bleu);margin:26px 0 10px;padding-bottom:4px;border-bottom:2px solid var(--bord)}
+h2.titre:first-child{margin-top:4px}
+.carte{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.carte h3{margin:0 0 8px;font-size:1.05rem;color:var(--bleu)}
+.carte h4{margin:12px 0 4px;font-size:.95rem}
+.info{border-left:5px solid var(--bleu);background:var(--bleu-pale)}
+.ok{border-left:5px solid var(--vert);background:var(--vert-pale)}
+.attention{border-left:5px solid var(--orange);background:var(--orange-pale)}
+.alerte{border-left:5px solid var(--rouge);background:var(--rouge-pale)}
+.petit{font-size:.84rem;color:var(--gris)}
+ul{padding-left:20px;margin:6px 0}
+li{margin:3px 0}
+p{margin:6px 0}
+.badge{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--bleu);color:#fff;vertical-align:middle}
+.badge.dai{background:var(--rouge)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{border:1px solid var(--bord);padding:5px 7px;text-align:left;vertical-align:top}
+th{background:var(--bleu-pale)}
+.code{font-weight:800;color:var(--bleu);letter-spacing:.5px}
+details{border:1px dashed var(--bord);border-radius:9px;padding:8px 10px;margin:8px 0;background:var(--fond)}
+details summary{cursor:pointer;font-weight:600;color:var(--bleu)}
+
+/* Choix appareil */
+#choix{padding:6px 0 4px}
+.question{text-align:center;font-size:1.15rem;font-weight:800;margin:6px 0 12px}
+.centre{text-align:center}
+.gros-choix{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choisir{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:150px;border:3px solid var(--bleu);background:var(--carte);color:var(--bleu);border-radius:18px;cursor:pointer;padding:16px 8px;box-shadow:0 3px 10px rgba(0,0,0,.08);transition:transform .12s,background .15s}
+.choisir:active{transform:scale(.97)}
+.choisir .gb{font-size:1.6rem;font-weight:900;letter-spacing:1px;background:var(--bleu);color:#fff;border-radius:40px;padding:6px 24px}
+.choisir .gt{font-size:1.15rem;font-weight:800}
+.choisir .gs{font-size:.85rem;color:var(--gris)}
+.choisir.dai{border-color:var(--rouge);color:var(--rouge)}
+.choisir.dai .gb{background:var(--rouge)}
+.choisir.sel{background:var(--bleu);color:#fff}
+.choisir.sel .gb{background:#fff;color:var(--bleu)}
+.choisir.dai.sel{background:var(--rouge)}
+.choisir.dai.sel .gb{color:var(--rouge)}
+.choisir.sel .gs{color:rgba(255,255,255,.85)}
+.gros-choix.fait .choisir{min-height:96px}
+.gros-choix.fait .choisir:not(.sel){opacity:.55}
+#deroule>*{animation:apparait .45s ease both}
+#deroule>*:nth-child(2){animation-delay:.05s}#deroule>*:nth-child(3){animation-delay:.1s}#deroule>*:nth-child(4){animation-delay:.15s}
+#deroule>*:nth-child(n+5){animation-delay:.25s}
+@keyframes apparait{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.fiche-app>h3:first-child{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:1.15rem;margin-bottom:12px}
+.fiche-app>h3:first-child .badge{font-size:1.25rem;padding:6px 22px;letter-spacing:1px;border-radius:30px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.chambres{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;font-size:.88rem;margin:6px 0}
+.chambres b{white-space:nowrap}
+
+/* Situations */
+.legende{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;margin:4px 0 10px}
+.legende span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.legende .v::before{background:var(--vert)}
+.legende .o::before{background:var(--orange)}
+.legende .r::before{background:var(--rouge)}
+.situ{border:1px solid var(--bord);border-radius:10px;margin:7px 0;cursor:pointer;background:var(--carte);overflow:hidden}
+.situ .q{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}
+.situ .q::before{content:"";flex:0 0 14px;height:14px;border-radius:50%;border:2px solid var(--gris);margin-top:3px}
+.situ .rep{display:none;padding:0 12px 10px 36px;font-size:.92rem}
+.situ .verdict{font-weight:800;display:block;margin-bottom:2px}
+.situ.on .rep{display:block}
+.situ.on.v{border-color:var(--vert);background:var(--vert-pale)} .situ.on.v .q::before{background:var(--vert);border-color:var(--vert)} .situ.on.v .verdict{color:var(--vert)}
+.situ.on.o{border-color:var(--orange);background:var(--orange-pale)} .situ.on.o .q::before{background:var(--orange);border-color:var(--orange)} .situ.on.o .verdict{color:var(--orange)}
+.situ.on.r{border-color:var(--rouge);background:var(--rouge-pale)} .situ.on.r .q::before{background:var(--rouge);border-color:var(--rouge)} .situ.on.r .verdict{color:var(--rouge)}
+
+.coche{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--bord);border-radius:9px;margin:6px 0;cursor:pointer;user-select:none}
+.coche input{width:21px;height:21px;flex:0 0 21px;margin:0;accent-color:var(--vert)}
+.coche.cochee{background:var(--vert-pale);border-color:var(--vert)}
+.cache{display:none !important}
+
+/* ECG animé */
+.ecg-box{position:relative;margin:6px 0}
+.ecg-box .lb{position:absolute;bottom:2px;transform:translateX(-30%);font-size:10px;color:var(--gris);pointer-events:none}
+.ecg-box .lt{position:absolute;top:2px;font-size:11px;font-weight:700;color:var(--bleu);white-space:nowrap;pointer-events:none}
+.ecg-box .lt.r{color:var(--rouge)}
+.ecg-box .lt.n{font-weight:400}
+.ecg-box .lt.g{transform:translateX(-100%)}
+.ecg-box .lt.l2{top:18px}
+.ecg{width:100%;display:block;border-radius:8px;background-color:var(--ecg-fond);background-image:
+  repeating-linear-gradient(0deg,transparent 0 9px,var(--grille) 9px 10px),
+  repeating-linear-gradient(90deg,transparent 0 9px,var(--grille) 9px 10px)}
+.ecg path,.ecg line{vector-effect:non-scaling-stroke}
+.ecg path{fill:none;stroke:var(--trace);stroke-width:1.7;stroke-linejoin:round}
+.ecg .fantome{opacity:.13}
+.ecg .spike{stroke:var(--rouge)}
+.ecg .bruit{stroke:var(--orange)}
+.ecg text{font-size:9px;fill:var(--gris);font-family:sans-serif}
+.ecg .mark{stroke:var(--bleu);stroke-dasharray:3 3;stroke-width:1.3}
+.ecg .marklbl{fill:var(--bleu);font-weight:700;font-size:10px}
+.ecg .rlbl{fill:var(--rouge);font-weight:700;font-size:10px}
+.ecg .curseur{stroke:var(--trace);stroke-width:5;opacity:.25}
+.ecg-l{font-weight:700;font-size:.9rem;margin-top:8px;display:block}
+
+/* Marques */
+.marques{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.marques button,.seg button{border:1.5px solid var(--bord);background:var(--carte);color:var(--texte);padding:8px 11px;border-radius:20px;font-size:.88rem;font-weight:600;cursor:pointer}
+.marques button.sel{background:var(--bleu);border-color:var(--bleu);color:#fff}
+.seg{display:inline-flex;gap:4px;margin-bottom:6px}
+.seg button.sel{background:var(--texte);color:var(--carte);border-color:var(--texte)}
+.batt{display:flex;gap:10px;margin:8px 0}
+.batt div{flex:1;border-radius:10px;padding:10px;text-align:center}
+.batt .bol{background:var(--vert-pale);border:1px solid var(--vert)}
+.batt .eri{background:var(--orange-pale);border:1px solid var(--orange)}
+.batt b{display:block;font-size:1.5rem}
+.batt small{font-size:.78rem;color:var(--gris)}
+.fiche dt{font-weight:700;margin-top:8px;font-size:.9rem;color:var(--bleu)}
+.fiche dd{margin:2px 0 0}
+
+/* Cas */
+.cas{cursor:pointer}
+.cas .rep{display:none;margin-top:8px}
+.cas.vu .rep{display:block}
+footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30px}
+
+/* Scan */
+.scan-btn{display:block;width:100%;margin:12px 0 4px;padding:14px;border-radius:14px;border:2px dashed var(--bleu);background:var(--bleu-pale);color:var(--bleu);font-size:1.05rem;font-weight:800;cursor:pointer}
+.scan-btn.sec{border-style:solid;background:var(--carte);font-size:.95rem;padding:11px}
+.scan-btn:disabled{opacity:.4;cursor:not-allowed}
+#scan-panel{margin-top:10px}
+.scan-etat{font-weight:600;text-align:center;padding:6px 0}
+.scan-etat.erreur{color:var(--rouge);font-weight:400}
+.barre-ocr{height:8px;background:var(--bord);border-radius:4px;overflow:hidden;margin-top:6px}
+.barre-ocr div{height:100%;background:var(--bleu);transition:width .2s}
+.scan-res{display:flex;gap:12px;align-items:flex-start}
+.scan-img{width:38%;max-width:200px;border-radius:8px;border:1px solid var(--bord);object-fit:cover}
+.scan-champs{flex:1;display:flex;flex-direction:column;gap:8px}
+.scan-champs label{display:flex;flex-direction:column;gap:3px;font-size:.85rem;font-weight:700}
+.scan-champs select,.scan-champs input{font-size:16px;padding:8px;border-radius:8px;border:1px solid var(--bord);background:var(--carte);color:var(--texte);width:100%}
+.ok-ic{color:var(--vert);font-weight:700;font-size:.78rem;margin-left:4px}
+.ko-ic{color:var(--orange);font-weight:700;font-size:.78rem;margin-left:4px}
+.scan-actions{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+.scan-actions .scan-btn{margin:6px 0 0;border-style:solid}
+#sc-valider{background:var(--bleu);color:#fff}
+.scan-txt{white-space:pre-wrap;font-size:.78rem;max-height:200px;overflow:auto;margin:6px 0 0}
+.chambres .hl{background:var(--vert-pale);color:var(--vert);font-weight:700;border-radius:4px;padding:1px 4px}
+.lien-fiche{color:var(--bleu);font-weight:800}
+@media (max-width:640px){.scan-res{flex-direction:column}.scan-img{width:100%;max-width:none;max-height:120px}}
+
+/* Téléphone */
+@media (max-width:640px){
+  body{font-size:15.5px}
+  main{padding:12px 10px}
+  .carte{padding:12px 12px;border-radius:10px}
+  h2.titre{font-size:1.08rem;margin-top:22px}
+  header{padding:14px 12px 12px}
+  header h1{font-size:1.2rem}
+  header p{font-size:.8rem}
+  .icone{width:60px;height:60px;flex-basis:60px}
+  nav a{font-size:.9rem;padding:8px 4px;min-height:44px}
+  .chambres{grid-template-columns:1fr;gap:0 0}
+  .chambres b{margin-top:6px}
+  table{font-size:.82rem}
+  th,td{padding:4px 5px}
+  .ecg{height:120px !important}
+  .ecg path{stroke-width:2}
+  .ecg .curseur{stroke-width:6}
+  .ecg-box .lb{font-size:11px}
+  .ecg-box .lt{font-size:12px}
+  .ecg-box .lt.l2{top:20px}
+  .situ .rep{padding-left:12px}
+  .batt b{font-size:1.3rem}
+  .choisir{min-height:132px}
+  .choisir .gb{font-size:1.4rem;padding:5px 18px}
+  .choisir .gt{font-size:1.02rem}
+}
+@media (max-width:360px){nav a{font-size:.82rem}}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}#deroule>*{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="tete">
+    <div class="tete-txt">
+      <h1>🧲 Le pouvoir de l'aimant</h1>
+      <p>PMK / DAI — pourquoi et quand s'en servir</p>
+    </div>
+    <img class="icone" alt="" src="data:image/jpeg;base64,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">
+  </div>
+  <nav>
+    <a href="#normal">Fonctionnement</a>
+    <a href="#aimant">Aimant</a>
+    <a href="#loin">Pour aller plus loin</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= CHOIX ================= -->
+<section id="choix">
+  <p class="question">Quel appareil porte le patient ?</p>
+  <div class="gros-choix">
+    <button class="choisir" data-dev="pmk"><span class="gb">PMK</span><span class="gt">C'est un PMK</span><span class="gs">Pacemaker</span></button>
+    <button class="choisir dai" data-dev="dai"><span class="gb">DAI</span><span class="gt">C'est un DAI</span><span class="gs">Défibrillateur</span></button>
+  </div>
+  <button class="scan-btn" id="scan-btn">📷 Scanner la carte de porteur</button>
+  <input type="file" id="scan-input" accept="image/*" capture="environment" hidden>
+  <div id="scan-panel" class="carte cache"></div>
+  <p class="petit centre">Sinon : interrogatoire, radio thorax (sonde de choc = segment épais radio-opaque sur la sonde VD).<br>Lecture sur le téléphone : la photo n'est ni envoyée ni conservée, l'identité du patient n'est jamais retenue.</p>
+</section>
+
+<div id="deroule" class="cache">
+<!-- ================= 1. FONCTIONNEMENT NORMAL ================= -->
+<div id="carte-lue" class="carte ok cache"></div>
+<h2 class="titre" id="normal">1. Fonctionnement normal</h2>
+<p class="petit">Comprendre le fonctionnement normal pour reconnaître le dysfonctionnement.</p>
+    <div class="carte fiche-app dev-pmk" id="carte-pmk">
+      <h3><span class="badge">PMK</span> Pacemaker</h3>
+      <p>Stimule le cœur lorsque son rythme est <b>trop lent</b> (sous une fréquence programmée). S'il détecte un rythme propre suffisant, il <b>s'inhibe</b> : l'absence de spikes n'est donc pas une panne.</p>
+
+      <h4>Code 3 lettres</h4>
+      <table>
+        <tr><th></th><th>Signification</th><th>Valeurs</th></tr>
+        <tr><td class="code">1</td><td>Lieu de stimulation</td><td>A, V, D, O</td></tr>
+        <tr><td class="code">2</td><td>Lieu de détection</td><td>A, V, D, O</td></tr>
+        <tr><td class="code">3</td><td>Réponse à la détection</td><td>I inhibe · T déclenche · D les deux · O rien</td></tr>
+      </table>
+
+      <h4>Nombre de chambres</h4>
+      <div class="chambres">
+        <b>Simple</b><span>1 sonde : oreillette (AAI) ou, le plus souvent, ventricule droit (VVI).</span>
+        <b>Double</b><span>2 sondes : oreillette + ventricule droits (DDD). Respecte la séquence auriculo-ventriculaire.</span>
+        <b>Triple</b><span>+ sonde ventriculaire gauche (sinus coronaire) = resynchronisation (CRT-P), pour l'insuffisance cardiaque.</span>
+      </div>
+
+      <h4>Reconnaître un dysfonctionnement</h4>
+      <ul>
+        <li><b>Pas de spikes</b> alors que le rythme est lent → inhibition inappropriée (sur-détection) ou panne.</li>
+        <li><b>Spikes sans QRS derrière</b> → défaut de capture.</li>
+        <li><b>Ondes P bloquées</b> sans stimulation ventriculaire (double chambre).</li>
+      </ul>
+
+      <details>
+        <summary>Tracés AAI / VVI / DDD</summary>
+        <span class="ecg-l code">AAI</span>
+        <p class="petit">Écoute et stimule l'oreillette ; s'inhibe si onde P détectée.</p>
+        <div data-trace="aai"></div>
+        <span class="ecg-l code">VVI</span>
+        <p class="petit">Idem, au ventricule.</p>
+        <div data-trace="vvi"></div>
+        <span class="ecg-l code">DDD</span>
+        <p class="petit">Détecte et stimule les 2 cavités ; stimule le ventricule après un délai AV programmé si pas de QRS propre.</p>
+        <div data-trace="ddd"></div>
+        <p class="petit">A / V = spike atrial / ventriculaire · P / R = activité spontanée. Tracés schématiques.</p>
+      </details>
+    </div>
+    <div class="carte fiche-app dev-dai" id="carte-dai">
+      <h3><span class="badge dai">DAI</span> Défibrillateur</h3>
+      <p>Analyse <b>en permanence</b> le rythme (fréquence, morphologie, régularité des QRS…).</p>
+      <ul>
+        <li>Tachycardie jugée <b>ventriculaire</b> → <b>ATP</b> (stimulation plus rapide pour « casser » l'arythmie) puis <b>choc</b>.</li>
+        <li>Bradycardie → stimule comme un PMK (souvent <span class="code">VVI 40/min</span>).</li>
+      </ul>
+
+      <h4>Nombre de chambres</h4>
+      <div class="chambres">
+        <b>Simple</b><span>1 sonde VD, portant le <b>coil</b> de défibrillation (segment épais radio-opaque).</span>
+        <b>Double</b><span>+ sonde atriale : meilleure discrimination TV / TSV, stimulation DDD.</span>
+        <b>Triple</b><span>+ sonde VG = resynchronisation + défibrillation (CRT-D).</span>
+        <b>Sous-cutané</b><span>Aucune sonde dans le cœur (sonde sous la peau, le long du sternum) : choc possible, pas de stimulation permanente.</span>
+      </div>
+
+      <h4>Reconnaître un dysfonctionnement</h4>
+      <ul>
+        <li><b>Chocs répétés chez un patient conscient</b> en rythme organisé → chocs inappropriés (fracture de sonde, sur-détection, TSV).</li>
+        <li><b>Chocs répétés sur vraies TV/FV</b> qui récidivent → orage rythmique.</li>
+      </ul>
+    </div>
+
+<!-- ================= 2. AIMANT ================= -->
+<h2 class="titre" id="aimant">2. L'aimant : indication, pose, effet attendu</h2>
+<div id="aimant-corps">
+  <div class="carte">
+    <h3 id="ind-titre">Quelle est la situation ?</h3>
+    <p class="petit">Touchez une ou plusieurs situations pour afficher le verdict.</p>
+    <div class="legende"><span class="v">Indiqué</span><span class="o">Non indiqué, sans danger</span><span class="r">Délétaire</span></div>
+    <div id="situations"></div>
+  </div>
+
+  <div class="carte">
+    <h3>Poser l'aimant</h3>
+    <label class="coche"><input type="checkbox"><span>Scope + défibrillateur, <b>patchs posés</b> (antéro-postérieurs, à distance du boîtier).</span></label>
+    <label class="coche"><input type="checkbox"><span>Palper le boîtier (le plus souvent sous-claviculaire gauche).</span></label>
+    <label class="coche"><input type="checkbox"><span>Aimant posé <b>directement sur le boîtier</b>. <span class="dev-dai">Certaines marques de DAI demandent une position décentrée : voir « Pour aller plus loin ».</span></span></label>
+    <label class="coche"><input type="checkbox"><span>Le <b>maintenir</b> (scotché si besoin) : l'effet cesse en général au retrait.</span></label>
+    <label class="coche"><input type="checkbox"><span>Obésité, boîtier profond : parfois <b>2 aimants</b> nécessaires.</span></label>
+    <label class="coche dev-dai"><input type="checkbox"><span>Écouter : un <b>bip</b> confirme la suspension des thérapies (Boston Scientific et Medtronic uniquement).</span></label>
+  </div>
+
+  <div class="carte">
+    <h3>Effet attendu</h3>
+    <div class="dev-pmk">
+      <p>Le PMK <b>ne s'arrête pas</b> : il devient <b>« sourd et aveugle »</b> (asynchrone). Il stimule à <b>fréquence fixe</b> (fréquence aimant), quel que soit le rythme sous-jacent.</p>
+      <p>Mode <span class="code">AOO</span>, <span class="code">VOO</span> ou <span class="code">DOO</span> selon le nombre de sondes.</p>
+      <div data-trace="aimant-pmk"></div>
+      <p>La fréquence aimant dépend de la <b>marque</b> et renseigne sur la <b>batterie</b> : elle baisse quand la pile s'use (voir « Pour aller plus loin »).</p>
+    </div>
+    <div class="dev-dai">
+      <p>Les <b>thérapies tachycardie</b> (ATP, chocs) sont <b>suspendues</b>. La <b>stimulation anti-bradycardie n'est pas modifiée</b> (pas de passage en asynchrone, sauf particularité Sorin / MicroPort).</p>
+      <div data-trace="aimant-dai"></div>
+      <p class="petit">Exemple : artefacts de fracture de sonde pris pour une FV → choc inapproprié. Sous aimant, les artefacts persistent mais le DAI ne choque plus.</p>
+      <p>Si TV / FV sous aimant : <b>choc électrique externe</b> par les patchs.</p>
+    </div>
+  </div>
+
+  <div class="carte info">
+    <h3>Après</h3>
+    <ul>
+      <li>Retrait de l'aimant = <b>retour à la programmation initiale</b> (rares exceptions : voir marques).</li>
+      <li>Laisser l'aimant pendant le transport si l'indication persiste.</li>
+      <li>Orientation vers un centre pouvant <b>interroger l'appareil</b>.</li>
+      <li>Transmettre : marque, modèle, heure de pose, effet observé<span class="dev-dai">, chocs reçus</span>.</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /deroule -->
+
+<!-- ================= 3. POUR ALLER PLUS LOIN ================= -->
+<h2 class="titre" id="loin">3. Pour aller plus loin : spécificités par marque</h2>
+
+<div class="carte">
+  <div class="seg" id="seg-dev">
+    <button data-d="pmk" class="sel">PMK</button>
+    <button data-d="dai">DAI</button>
+  </div>
+  <div class="marques" id="marques"></div>
+  <div id="fiche"></div>
+</div>
+
+<div class="carte info" id="batt-expl">
+  <h3>Batterie : BOL et ERI</h3>
+  <p>Sous aimant, la fréquence de stimulation d'un PMK donne une idée de l'état de la pile :</p>
+  <ul>
+    <li><b>BOL</b> (<i>Beginning Of Life</i>) : pile neuve ou en bon état → fréquence aimant « normale » de la marque.</li>
+    <li><b>ERI</b> (<i>Elective Replacement Indicator</i>) : pile usée, <b>remplacement à programmer</b> → fréquence aimant plus basse.</li>
+  </ul>
+  <p>Au-delà (fin de vie de la pile, EOL), la réponse à l'aimant devient <b>imprévisible</b>, toutes marques confondues.</p>
+</div>
+
+<p class="petit">Source : Jacob S, Panaich SS, Maheshwari R, Haddad JW, Padanilam BJ, John SK. <i>Clinical applications of magnets on cardiac rhythm management devices.</i> Europace 2011;13:1222–30 (doi:10.1093/europace/eur137), figures 3 et 4. Données de 2011 : les modèles récents peuvent différer. St. Jude Medical est aujourd'hui Abbott ; Sorin (ELA Medical) est aujourd'hui MicroPort CRM.</p>
+
+<!-- ================= 4. CAS CLINIQUES ================= -->
+<h2 class="titre" id="cas">4. Cas cliniques</h2>
+<p class="petit">Touchez un cas pour afficher la réponse.</p>
+<div class="carte cas">
+  <h3>Cas 1</h3>
+  <p>Homme 68 ans, porteur de DAI. A reçu 5 chocs en 15 min. Conscient, angoissé. Scope : rythme sinusal 85/min.</p>
+  <p><b>Que faites-vous ?</b></p>
+  <div class="rep carte ok"><b>Aimant sur le DAI.</b> Chocs inappropriés chez un patient vigile en rythme sinusal → suspicion de fracture de sonde / sur-détection. Patchs posés, choc externe si TV/FV. Interrogation du DAI.</div>
+</div>
+<div class="carte cas">
+  <h3>Cas 2</h3>
+  <p>Femme 80 ans, PMK double chambre. Bradycardie 32/min mal tolérée. Ondes P visibles, <b>aucun spike</b>.</p>
+  <p><b>Intérêt de l'aimant ?</b></p>
+  <div class="rep carte ok"><b>Oui, test diagnostique et thérapeutique.</b> Absence de spikes = inhibition inappropriée (sur-détection) ou panne. Sous aimant : spikes réguliers avec capture → inhibition confirmée et contournée. Pas de spikes → panne / batterie (ou aimant ignoré par programmation) : stimulation externe.</div>
+</div>
+<div class="carte cas">
+  <h3>Cas 3</h3>
+  <p>Patient PMK, bradycardie 35/min. Spikes ventriculaires réguliers à 60/min, <b>non suivis de QRS</b>.</p>
+  <p><b>L'aimant va-t-il aider ?</b></p>
+  <div class="rep carte attention"><b>Non (sans danger, mais inutile).</b> Le PMK stimule mais <b>ne capture pas</b>. L'aimant ne fera que rendre la stimulation asynchrone. Stimulation transcutanée, isoprénaline, avis rythmologue.</div>
+</div>
+<div class="carte cas">
+  <h3>Cas 4</h3>
+  <p>Porteur de PMK DDD, palpitations. Tachycardie régulière stimulée à la fréquence maximale du PMK.</p>
+  <p><b>Diagnostic et conduite ?</b></p>
+  <div class="rep carte ok"><b>Tachycardie par réentrée électronique.</b> L'aimant rend le PMK asynchrone (plus de détection atriale) → interruption du circuit.</div>
+</div>
+<div class="carte cas">
+  <h3>Cas 5</h3>
+  <p>Patient en soins palliatifs, LATA décidée, porteur de DAI.</p>
+  <p><b>Que faire ?</b></p>
+  <div class="rep carte ok"><b>Aimant scotché sur le boîtier</b> pour suspendre les chocs (confort), en attendant une désactivation par programmation.</div>
+</div>
+<div class="carte cas">
+  <h3>Cas 6</h3>
+  <p>Porteur de PMK Medtronic. Sous aimant, stimulation asynchrone à <b>65/min</b>.</p>
+  <p><b>Qu'en déduisez-vous ?</b></p>
+  <div class="rep carte attention"><b>Pile usée (ERI).</b> Chez Medtronic, 65/min est réservé à l'indicateur de remplacement (85/min si pile en bon état). Remplacement à programmer, avis rythmologue.</div>
+</div>
+
+</main>
+<footer>
+Contenu d'après l'infographie « Le pouvoir de l'aimant » — Dr Balaz, relecture Drs Wilkin, Barraud et Khalil (@SMURBMPM).<br>
+Spécificités par marque : Jacob S et al., Europace 2011;13:1222–30.<br>
+Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des exceptions sont possibles.
+</footer>
+
+<script>
+(function(){
+  var reduit=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= ECG ================= */
+  var B=50, nClip=0, LBL=[];
+  function spk(x){return '<path class="spike" d="M'+x+','+(B+2)+' L'+x+','+(B-42)+'"/>';}
+  function lab(x,t){LBL.push('<span class="lb" style="left:'+(x/6).toFixed(2)+'%">'+t+'</span>');return '';}
+  function haut(x,t,c){LBL.push('<span class="lt '+(c||'')+'" style="left:'+(x/6).toFixed(2)+'%">'+t+'</span>');}
+
+  /* événements à position absolue : {t,x,w} */
+  function traceAbs(ev){
+    ev=ev.slice().sort(function(a,b){return a.x-b.x});
+    var d='M0,'+B, extra='', bruit='';
+    ev.forEach(function(e){
+      var x=e.x;
+      d+=' L'+x+','+B;
+      if(e.t==='p'){d+=' Q'+(x+6)+','+(B-11)+' '+(x+12)+','+B;extra+=lab(x+6,'P');}
+      else if(e.t==='a'){extra+=spk(x)+lab(x,'A');d+=' L'+(x+3)+','+B+' Q'+(x+9)+','+(B-11)+' '+(x+15)+','+B;}
+      else if(e.t==='r'){d+=' L'+(x+3)+','+(B+5)+' L'+(x+6)+','+(B-35)+' L'+(x+9)+','+(B+10)+' L'+(x+12)+','+B+' L'+(x+26)+','+B+' Q'+(x+36)+','+(B-14)+' '+(x+48)+','+B;extra+=lab(x+6,'R');}
+      else if(e.t==='v'){extra+=spk(x)+lab(x,'V');d+=' L'+(x+4)+','+B+' L'+(x+10)+','+(B-28)+' L'+(x+20)+','+(B+18)+' L'+(x+28)+','+B+' L'+(x+34)+','+B+' Q'+(x+44)+','+(B+14)+' '+(x+56)+','+B;}
+      else if(e.t==='s'){extra+=spk(x)+lab(x,'V');}
+      else if(e.t==='bruit'){
+        var b='M'+x+','+B;
+        for(var i=3;i<=e.w;i+=3){b+=' L'+(x+i)+','+(B+(((i*37)%23)-11)*1.6);}
+        b+=' L'+(x+e.w)+','+B;
+        bruit+='<path class="bruit" d="'+b+'"/>';
+        d+=' M'+(x+e.w)+','+B;
+      }
+      else if(e.t==='choc'){d+=' L'+(x+1)+','+(B-46)+' L'+(x+3)+','+(B+42)+' L'+(x+6)+','+B;haut(x+4,'⚡ CHOC','r g');}
+    });
+    d+=' L600,'+B;
+    return '<path d="'+d+'"/>'+bruit+extra;
+  }
+
+  /* séquence relative -> positions absolues */
+  var LARG={p:22,a:24,r:52,v:60,s:10};
+  function seq(s){var x=10,out=[];s.forEach(function(t){if(typeof t==='number'){x+=t;return;}out.push({t:t,x:x});x+=LARG[t];});return out;}
+
+  function svgAnime(inner,h,dur){
+    var id='clip'+(++nClip), lb=LBL.join(''); LBL=[];
+    var att='class="ecg" viewBox="0 0 600 '+h+'" preserveAspectRatio="none" style="aspect-ratio:600/'+h+'" role="img"';
+    if(reduit) return '<div class="ecg-box"><svg '+att+'>'+inner+'</svg>'+lb+'</div>';
+    return '<div class="ecg-box"><svg '+att+'>'+
+      '<defs><clipPath id="'+id+'"><rect x="0" y="0" height="'+h+'" width="0">'+
+      '<animate attributeName="width" from="0" to="600" dur="'+dur+'s" repeatCount="indefinite"/></rect></clipPath></defs>'+
+      '<g class="fantome">'+inner+'</g>'+
+      '<g clip-path="url(#'+id+')">'+inner+'</g>'+
+      '<line class="curseur" x1="0" x2="0" y1="0" y2="'+h+'">'+
+      '<animate attributeName="x1" from="0" to="600" dur="'+dur+'s" repeatCount="indefinite"/>'+
+      '<animate attributeName="x2" from="0" to="600" dur="'+dur+'s" repeatCount="indefinite"/></line></svg>'+lb+'</div>';
+  }
+  function marque(x,t,h){haut(x+4,t);return '<line class="mark" x1="'+x+'" y1="2" x2="'+x+'" y2="'+(h-2)+'"/>';}
+
+  var TRACES={
+    aai:function(){return svgAnime(traceAbs(seq(['a','r',20,'a','r',20,'p','r',20,'a','r'])),84,5);},
+    vvi:function(){return svgAnime(traceAbs(seq(['v',40,'p','r',40,'v',30,'p','r'])),84,5);},
+    ddd:function(){return svgAnime(traceAbs(seq(['a','v',20,'p','v',20,'a','v',20,'p','r'])),84,5);},
+    'aimant-pmk':function(){
+      var ev=[{t:'r',x:20},{t:'r',x:115},{t:'r',x:210},{t:'v',x:270},{t:'v',x:350},{t:'v',x:430},{t:'r',x:525}];
+      var t=traceAbs(ev), m=marque(250,'Aimant ON',96)+marque(505,'OFF',96);
+      return svgAnime(t+m,96,7);
+    },
+    'aimant-dai':function(){
+      var ev=[{t:'r',x:15},{t:'r',x:100},{t:'bruit',x:165,w:72},{t:'choc',x:250},{t:'r',x:275},{t:'bruit',x:370,w:72},{t:'r',x:460},{t:'r',x:540}];
+      var t=traceAbs(ev), m=marque(345,'Aimant ON',96); haut(349,'pas de choc','n l2');
+      return svgAnime(t+m,96,7);
+    }
+  };
+  function dessiner(root){
+    (root||document).querySelectorAll('[data-trace]').forEach(function(el){
+      var f=TRACES[el.dataset.trace]; if(f) el.innerHTML=f();
+    });
+  }
+  dessiner();
+
+  /* ================= SITUATIONS ================= */
+  var VERDICT={v:'Indiqué',o:'Non indiqué, sans danger',r:'Délétaire'};
+  var SITU={
+    pmk:[
+      {c:'v',q:"Bradycardie sans spike visible (ou ondes P non suivies de stimulation)",r:"Suspicion d'inhibition inappropriée (sur-détection). L'aimant rend le PMK asynchrone : test diagnostique, et souvent thérapeutique."},
+      {c:'v',q:"Besoin d'accélérer la fréquence (torsade de pointes, état de choc…)",r:"Stimulation fixe à la fréquence aimant (≈ 85 à 100/min selon marque et pile)."},
+      {c:'v',q:"Tachycardie régulière stimulée à la fréquence maximale (PMK double chambre)",r:"Évoque une tachycardie par réentrée électronique : l'aimant supprime la détection atriale et interrompt le circuit."},
+      {c:'o',q:"Spikes présents mais non suivis de QRS",r:"Défaut de capture : le PMK stimule déjà, l'aimant ne change rien. Stimulation transcutanée, isoprénaline."},
+      {c:'o',q:"PMK fonctionnant normalement (spikes adaptés, ou rythme propre au-dessus de la fréquence programmée)",r:"Pas d'intérêt thérapeutique. Seul intérêt : lire la fréquence aimant (marque, état de la pile)."},
+      {c:'r',q:"Rythme propre rapide sur cœur instable (ischémie aiguë, hypokaliémie…)",r:"La stimulation asynchrone entre en compétition avec le rythme propre : risque (rare) de spike sur l'onde T et de TV/FV. Ne poser l'aimant que si bénéfice clair, patchs posés."}
+    ],
+    dai:[
+      {c:'v',q:"Chocs multiples chez un patient conscient, en rythme organisé",r:"Chocs inappropriés (fracture de sonde, sur-détection, TSV) : l'aimant suspend les thérapies."},
+      {c:'v',q:"Orage rythmique ne répondant pas aux thérapies du DAI",r:"Prendre la main : aimant + patchs, choc électrique externe si TV/FV, traitement de l'orage."},
+      {c:'v',q:"Soins palliatifs / LATA",r:"Suspendre les chocs pour le confort, en attendant une désactivation par programmation."},
+      {c:'o',q:"Choc unique, patient asymptomatique",r:"Pas d'indication de l'aimant : surveillance scopée et interrogation du DAI."},
+      {c:'o',q:"Bradycardie chez un porteur de DAI",r:"L'aimant ne modifie pas la stimulation anti-bradycardie (sauf Sorin / MicroPort). Inutile : stimulation externe si besoin."},
+      {c:'r',q:"Aimant sans scope ni défibrillateur externe prêt",r:"Le patient perd sa protection contre la mort subite. Toujours scope + patchs posés avant l'aimant."}
+    ]
+  };
+
+  var device=null;
+  function choisir(d){
+    device=d;
+    document.querySelectorAll('[data-dev]').forEach(function(b){b.classList.toggle('sel',b.dataset.dev===d)});
+    document.querySelector('.gros-choix').classList.add('fait');
+    var der=document.getElementById('deroule');
+    der.classList.add('cache'); void der.offsetWidth; der.classList.remove('cache');
+    der.querySelectorAll('.dev-pmk').forEach(function(x){x.classList.toggle('cache',d!=='pmk')});
+    der.querySelectorAll('.dev-dai').forEach(function(x){x.classList.toggle('cache',d!=='dai')});
+    document.getElementById('ind-titre').innerHTML=(d==='pmk'?'<span class="badge">PMK</span>':'<span class="badge dai">DAI</span>')+' Quelle est la situation ?';
+    var html='';
+    SITU[d].forEach(function(s){
+      html+='<div class="situ '+s.c+'"><div class="q">'+s.q+'</div><div class="rep"><span class="verdict">'+VERDICT[s.c]+'</span>'+s.r+'</div></div>';
+    });
+    document.getElementById('situations').innerHTML=html;
+    der.querySelectorAll('input').forEach(function(i){i.checked=false;i.closest('.coche').classList.remove('cochee')});
+    der.querySelectorAll('details').forEach(function(x){x.open=false});
+    devPlus(d);
+    setTimeout(function(){document.getElementById('normal').scrollIntoView({block:'start'});},30);
+  }
+  document.querySelectorAll('[data-dev]').forEach(function(b){b.addEventListener('click',function(){choisir(b.dataset.dev);if(window.__effacerScan)window.__effacerScan();})});
+  document.getElementById('situations').addEventListener('click',function(e){
+    var s=e.target.closest('.situ'); if(s) s.classList.toggle('on');
+  });
+  document.addEventListener('change',function(e){
+    if(e.target.type==='checkbox') e.target.closest('.coche').classList.toggle('cochee',e.target.checked);
+  });
+
+  /* ================= MARQUES (Jacob et al. 2011, fig. 3 et 4) ================= */
+  var MARQUES=[
+    {k:'boston',n:'Boston Scientific',sub:'(ex-Guidant)'},
+    {k:'medtronic',n:'Medtronic'},
+    {k:'stjude',n:'St. Jude',sub:'(Abbott)'},
+    {k:'biotronik',n:'Biotronik'},
+    {k:'sorin',n:'Sorin',sub:'(MicroPort)'}
+  ];
+  var PMK={
+    boston:{bol:'100',eri:'85',
+      modes:"Modes programmables : <b>Battery Test</b> (asynchrone), <b>EGM</b> (enregistre un ECG, sans effet sur la stimulation), <b>OFF</b> (ignore l'aimant).",
+      ecg:"Asynchrone, délai AV 100 ms. Le 3<sup>e</sup> battement est délivré à 50 % de la largeur d'impulsion programmée (test de marge de sécurité de capture).",
+      none:"Pile épuisée, mode OFF ou mode EGM.",
+      plus:"Paliers intermédiaires : 90/min quand le remplacement approche."},
+    medtronic:{bol:'85',eri:'65',
+      modes:"<b>Pas de mode OFF</b> : la stimulation asynchrone est toujours attendue sous aimant.",
+      ecg:"3 premiers battements à 100/min (test de marge de capture, TMT : le dernier à largeur réduite de 20 %), sauf modèle EnRhythm, puis asynchrone à la fréquence aimant.",
+      none:"Pile épuisée (proche ou au-delà de la fin de vie).",
+      plus:"<b>65/min est réservé à l'ERI</b> : un PMK Medtronic ne peut pas être programmé à 65/min. Si vous voyez 65/min sous aimant, la pile est usée."},
+    stjude:{bol:'≈ 100',eri:'≈ 85',
+      modes:"Modes : <b>Battery Test</b> (asynchrone immédiat), <b>Battery Test + EGM</b> (ECG enregistré si aimant &lt; 5 s, asynchrone si &gt; 5 s), <b>EGM</b> (sans effet sur la stimulation), <b>OFF</b>.",
+      ecg:"Asynchrone à la fréquence aimant. En mode Battery Test + EGM, <b>maintenir l'aimant plus de 5 s</b>.",
+      none:"Pile épuisée, mode EGM ou OFF.",
+      plus:"Selon les modèles : 98,6 → 86,3/min (Affinity, Identity, Integrity, Verity, Victory, Zephyr, Accent, Anthem) ou 100 → &lt; 85/min (Meta, Microny, Tempo, Regency)."},
+    biotronik:{bol:'90',eri:'80',
+      modes:"Modes : <b>Asynchrone</b>, <b>Synchrone</b> (stimule dans le mode programmé, à la fréquence plancher : <b>pas</b> d'asynchrone), <b>Auto</b> (10 cycles asynchrones puis retour au mode synchrone).",
+      ecg:"Dépend du mode programmé : un mode Synchrone ou Auto <b>ne donne pas</b> une stimulation asynchrone durable.",
+      none:"Pile épuisée ou mode Synchrone.",
+      plus:"Si l'effet asynchrone est indispensable et absent : stimulation externe, avis rythmologue."},
+    sorin:{bol:'96',eri:'80',
+      modes:"Mode <b>ON</b> : stimulation asynchrone (largeur d'impulsion 0,5 ms).",
+      ecg:"Asynchrone à la fréquence aimant.",
+      none:"Pile épuisée ou réponse à l'aimant désactivée (OFF).",
+      plus:"<b>Au retrait</b> : « test de capture » (6 impulsions asynchrones, délai AV 94 ms) puis 2 impulsions à la fréquence programmée, avant le retour au mode initial."}
+  };
+  var DAI={
+    boston:{
+      reponse:"Programmable <b>ON</b> ou <b>OFF</b> (OFF = ignore l'aimant, aucun son).",
+      son:"<b>Bips</b> synchrones aux R (ou 1/s) : thérapies suspendues tant que l'aimant est en place.<br><b>Son continu</b> : thérapies programmées sur OFF.<br>Pas de son : position, pile, autre marque.",
+      tachy:"Détection et thérapies suspendues.",
+      stim:"Aucun effet.",
+      retrait:"Retour à l'état initial.",
+      piege:"Certains anciens modèles (fonction « change tachy mode with magnet ») : si l'aimant reste <b>plus de 30 s</b>, les bips deviennent un son continu = thérapies <b>désactivées durablement</b>, même après retrait. Réappliquer 30 s pour les réactiver (retour aux bips).",
+      pos:"Directement sur le boîtier."},
+    medtronic:{
+      reponse:"Répond toujours à l'aimant.",
+      son:"Sons seulement si alertes programmées (≈ 10 s) :<br><b>Son continu</b> : tout va bien.<br><b>Son intermittent</b> : alerte de faible urgence.<br><b>Deux tons alternés</b> : alerte de haute urgence.<br>Pas de son : pile, alertes non programmées, autre marque, position.",
+      tachy:"Détection suspendue.",
+      stim:"Aucun effet.",
+      retrait:"Retour à l'état initial.",
+      piege:"Un son d'alerte (faible ou haute urgence) impose une interrogation de l'appareil.",
+      pos:"Directement sur le boîtier."},
+    stjude:{
+      reponse:"Programmable <b>ON</b> ou <b>OFF</b> (ignore l'aimant).",
+      son:"<b>Aucun</b> son ni vibration.",
+      tachy:"Détection et thérapies suspendues.",
+      stim:"Aucun effet.",
+      retrait:"Retour à l'état initial.",
+      piege:"Pas de confirmation sonore : impossible de vérifier l'effet à l'oreille.",
+      pos:"<b>Décentré</b> : la courbe de l'anneau sur l'extrémité haute ou basse du boîtier."},
+    biotronik:{
+      reponse:"ON.",
+      son:"<b>Aucun</b> son.",
+      tachy:"Détection suspendue.",
+      stim:"Aucun effet.",
+      retrait:"Retour à l'état initial.",
+      piege:"Pas de confirmation sonore.",
+      pos:"Directement sur le boîtier."},
+    sorin:{
+      reponse:"ON.",
+      son:"<b>Aucun</b> son.",
+      tachy:"Détection et thérapies suspendues.",
+      stim:"<b>Stimulation à 96/min</b> (pile neuve) jusqu'à 80/min (ERI), <b>sans changement de mode</b>.",
+      retrait:"Retour à l'état initial.",
+      piege:"Seule marque de DAI où l'aimant modifie la fréquence de stimulation.",
+      pos:"<b>Décentré</b> : anneau sur le boîtier en évitant le connecteur (en haut)."}
+  };
+
+  var plusDev='pmk', plusMarque='boston';
+  function rendreMarques(){
+    document.getElementById('marques').innerHTML=MARQUES.map(function(m){
+      return '<button data-m="'+m.k+'" class="'+(m.k===plusMarque?'sel':'')+'">'+m.n+(m.sub?' <span style="font-weight:400;opacity:.75">'+m.sub+'</span>':'')+'</button>';
+    }).join('');
+  }
+  function rendreFiche(){
+    var f, html, nom=MARQUES.filter(function(m){return m.k===plusMarque})[0].n;
+    if(plusDev==='pmk'){
+      f=PMK[plusMarque];
+      html='<h3><span class="badge">PMK</span> '+nom+'</h3>'+
+        '<p class="petit">Fréquence aimant selon l\'état de la pile :</p>'+
+        '<div class="batt"><div class="bol"><b>'+f.bol+'</b>/min<br><small>BOL · pile en bon état</small></div>'+
+        '<div class="eri"><b>'+f.eri+'</b>/min<br><small>ERI · pile à remplacer</small></div></div>'+
+        '<dl class="fiche"><dt>Réponse à l\'aimant</dt><dd>'+f.modes+'</dd>'+
+        '<dt>ECG sous aimant</dt><dd>'+f.ecg+'</dd>'+
+        '<dt>Pas de réponse ECG ?</dt><dd>'+f.none+'</dd>'+
+        '<dt>À savoir</dt><dd>'+f.plus+'</dd></dl>';
+    } else {
+      f=DAI[plusMarque];
+      html='<h3><span class="badge dai">DAI</span> '+nom+'</h3>'+
+        '<dl class="fiche"><dt>Position de l\'aimant</dt><dd>'+f.pos+'</dd>'+
+        '<dt>Réponse à l\'aimant</dt><dd>'+f.reponse+'</dd>'+
+        '<dt>Signal sonore</dt><dd>'+f.son+'</dd>'+
+        '<dt>Thérapies tachycardie</dt><dd>'+f.tachy+'</dd>'+
+        '<dt>Stimulation anti-bradycardie</dt><dd>'+f.stim+'</dd>'+
+        '<dt>Au retrait</dt><dd>'+f.retrait+'</dd>'+
+        '<dt>Attention</dt><dd>'+f.piege+'</dd></dl>';
+    }
+    document.getElementById('fiche').innerHTML=html;
+    document.getElementById('batt-expl').classList.toggle('cache',plusDev!=='pmk');
+  }
+  function devPlus(d){
+    plusDev=d;
+    document.querySelectorAll('#seg-dev button').forEach(function(b){b.classList.toggle('sel',b.dataset.d===d)});
+    rendreFiche();
+  }
+  document.getElementById('seg-dev').addEventListener('click',function(e){var b=e.target.closest('button');if(b)devPlus(b.dataset.d);});
+  document.getElementById('marques').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    plusMarque=b.dataset.m; rendreMarques(); rendreFiche();
+  });
+  rendreMarques(); rendreFiche();
+
+
+  /* ================= MENU ACTIF ================= */
+  var liens=[].slice.call(document.querySelectorAll('nav a'));
+  liens.forEach(function(a){a.addEventListener('click',function(e){
+    var t=document.querySelector(a.getAttribute('href'));
+    if(t&&t.offsetParent===null){e.preventDefault();document.getElementById('choix').scrollIntoView({block:'start'});
+      var g=document.querySelector('.gros-choix');g.animate&&g.animate([{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}],{duration:450});}
+  });});
+  function actif(){
+    var y=window.scrollY+195, cur=null;
+    liens.forEach(function(a){var t=document.querySelector(a.getAttribute('href'));if(t&&t.offsetParent!==null&&t.offsetTop<=y)cur=a;});
+    liens.forEach(function(a){a.classList.toggle('on',a===cur)});
+  }
+  window.addEventListener('scroll',actif,{passive:true}); actif();
+
+
+  /* ================= SCAN DE LA CARTE DE PORTEUR (OCR local, Tesseract.js) ================= */
+  var OCR={
+    script:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+    workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+    corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
+    langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int'
+  };
+  var ocrWorker=null, ocrPret=null;
+  var NOMS={boston:'Boston Scientific',medtronic:'Medtronic',stjude:'St. Jude / Abbott',biotronik:'Biotronik',sorin:'Sorin / MicroPort'};
+
+  /* Marques */
+  var MOTS_MARQUE=[
+    ['medtronic',['MEDTRONIC']],
+    ['boston',['BOSTON','GUIDANT','SCIENTIFIC']],
+    ['stjude',['JUDE','ABBOTT','PACESETTER','SJM']],
+    ['biotronik',['BIOTRONIK']],
+    ['sorin',['SORIN','MICROPORT','LIVANOVA','ELA']]
+  ];
+  /* Gammes : nom, marque, type (pmk/dai), chambres forcées éventuelles (1, 3, 'sc') */
+  var GAMMES=[];
+  function g(m,t,liste,ch){liste.split(' ').forEach(function(n){GAMMES.push({n:n,m:m,t:t,ch:ch||null});});}
+  g('medtronic','dai','EVERA VISIA COBALT CROME PROTECTA SECURA VIRTUOSO MAXIMO MARQUIS ENTRUST INTRINSIC PRIMO AURORA');
+  g('medtronic','dai','CONCERTO CLARIA AMPLIA COMPIA BRAVA',3);
+  g('medtronic','pmk','AZURE ASTRA ADAPTA VERSA SENSIA RELIA ADVISA ENSURA REVO ATTESTA KAPPA SIGMA ENRHYTHM');
+  g('medtronic','pmk','PERCEPTA SERENA SOLARA SYNCRA',3);
+  g('medtronic','pmk','MICRA',1);
+  g('boston','dai','DYNAGEN INOGEN ORIGEN ENERGEN PUNCTUA TELIGEN INCEPTA AUTOGEN RESONATE PERCIVA VIGILANT MOMENTUM CHARISMA VITALITY CONFIENT');
+  g('boston','dai','COGNIS',3);
+  g('boston','dai','EMBLEM','sc');
+  g('boston','pmk','ACCOLADE ESSENTIO PROPONENT ALTRUA INGENIO ADVANTIO VITALIO FORMIO INSIGNIA');
+  g('boston','pmk','VALITUDE VISIONIST INTUA INVIVE',3);
+  g('stjude','dai','FORTIFY ELLIPSE UNIFY ASSURA GALLANT NEUTRINO ENTRANT CURRENT PROMOTE ATLAS EPIC ANALYST');
+  g('stjude','pmk','ASSURITY ENDURITY ACCENT ZEPHYR VERITY VICTORY IDENTITY INTEGRITY AFFINITY SUSTAIN MICRONY REGENCY');
+  g('stjude','pmk','ALLURE ANTHEM FRONTIER',3);
+  g('stjude','pmk','AVEIR',1);
+  g('biotronik','dai','IFORIA ILIVIA INTICA INVENTRA ILESTO IPERIA ITREVIA IDOVA LUMAX ACTICOR RIVACOR');
+  g('biotronik','pmk','ENITRA EDORA EVIA ETRINSA ELUNA ENTOVIS EFFECTA ESTELLA EVITY AMVIA ENTICOS PHILOS CYLOS PROTOS AXIOS TALOS');
+  g('sorin','dai','PLATINIUM PARADYM OVATIO INTENSIA ULYS GALI DEFENDER ALTO');
+  g('sorin','pmk','KORA REPLY ESPRIT ALIZEA BOREA CELEA SYMPHONY RHAPSODY TALENT ENO TEO OTO');
+  /* mots du langage courant : correspondance exacte uniquement */
+  var EXACT={CURRENT:1,ATLAS:1,EPIC:1,UNIFY:1,VERSA:1,RELIA:1,SIGMA:1,REPLY:1,ESPRIT:1,ALTO:1,ENO:1,TEO:1,OTO:1,KORA:1,EVIA:1,GALI:1,ULYS:1,REVO:1,KAPPA:1,ASTRA:1,AZURE:1,TALENT:1,PROMOTE:1,ACCENT:1,IDENTITY:1,INTEGRITY:1,VICTORY:1,AFFINITY:1,SUSTAIN:1,FRONTIER:1,VIGILANT:1,MOMENTUM:1,CHARISMA:1,VITALITY:1,ANALYST:1,DEFENDER:1,SYMPHONY:1,ANTHEM:1,AURORA:1,PRIMO:1,SERENA:1,ELLIPSE:1};
+
+  function lev(a,b){
+    if(Math.abs(a.length-b.length)>1) return 9;
+    var p=[],i,j;for(j=0;j<=b.length;j++)p[j]=j;
+    for(i=1;i<=a.length;i++){var c=[i];for(j=1;j<=b.length;j++){c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));}p=c;}
+    return p[b.length];
+  }
+  function proche(tok,mot){
+    if(tok===mot) return true;
+    if(EXACT[mot]||mot.length<6||tok.length<5) return false;
+    return lev(tok,mot)<=1;
+  }
+  function normaliser(t){return t.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+
+  function analyser(texte){
+    /* Confidentialité : toute ligne portant une donnée d'identité est écartée avant toute analyse */
+    var IDENT=/PATIENT|\bNOM\b|PRENOM|\bNAME\b|SURNAME|NAISSANCE|\bNE\(?E?\)?\s+LE\b|\bBORN\b|BIRTH|\bDOB\b|DATE|ADRESSE|ADDRESS|\bRUE\b|STREET|\bTEL\b|PHONE|\bSEXE\b|\bSEX\b|SECU|INSEE|\bNIR\b|\bIPP\b|DOSSIER|PORTEUR\s*:|TITULAIRE|HOLDER|MEDECIN|DOCTEUR|DOCTOR|PHYSICIAN|CARDIOLOG|HOPITAL|HOSPITAL|CLINIQUE|CLINIC|CENTRE|CENTER|IMPLANTE\s+PAR|IMPLANTED\s+BY|SIGNATURE|@/;
+    var brutes=texte.split(/\n+/).map(function(l){return l.trim();}).filter(Boolean)
+      .filter(function(l){return !IDENT.test(normaliser(l))&&!/\bDr\.?\s+[A-ZÀ-Ý][a-zà-ÿ]|\bDR\.\s/.test(l);});
+    texte=null;
+    var lignesOrig=brutes, lignes=brutes.map(normaliser);
+    var U=lignes.join('\n');
+    var toks=U.split(/[^A-Z0-9]+/).filter(Boolean);
+    var r={type:null,ch:null,marque:null,modele:'',indices:[]};
+
+    /* marque */
+    MOTS_MARQUE.some(function(e){
+      return e[1].some(function(m){
+        var ok=toks.some(function(t){return m.length<=4?t===m:proche(t,m);});
+        if(ok){r.marque=e[0];r.indices.push('Marque : « '+m+' »');}
+        return ok;
+      });
+    });
+
+    /* gamme */
+    var gam=null, ligneGam=-1;
+    lignes.some(function(l,i){
+      var lt=l.split(/[^A-Z0-9]+/).filter(Boolean);
+      return GAMMES.some(function(G){
+        if(lt.some(function(t){return proche(t,G.n);})){gam=G;ligneGam=i;return true;}
+      });
+    });
+    if(gam){
+      r.indices.push('Gamme : « '+gam.n+' » ('+NOMS[gam.m]+', '+(gam.t==='dai'?'DAI':'PMK')+')');
+      if(!r.marque) r.marque=gam.m;
+      /* modèle = nom de gamme + jetons techniques qui suivent (liste blanche), rien d'autre */
+      var lt=lignes[ligneGam].split(/\s+/), k=-1;
+      lt.some(function(t,i){if(proche(t.replace(/[^A-Z0-9]/g,''),gam.n)){k=i;return true;}});
+      var suite=[], TECH=/^(XT|DR|SR|VR|SC|DC|HF|HF-T|QP|QUAD|QUADRA|X4|MRI|SURESCAN|CRT-?D|CRT-?P|ICD|S-ICD|DF-?4|DF-?1|IS-?1|PLUS|AF|ACTIVE|PRO|ULTRA|RF|D|S|T|HFT|DDD|DDDR|VVI|VVIR)$/;
+      for(var j=k+1;j<lt.length&&suite.length<5;j++){
+        var t=lt[j].replace(/[^A-Z0-9\-+]/g,'');
+        if(!t) continue;
+        if(TECH.test(t)||/^\d{1,2}$/.test(t)||(/[A-Z]/.test(t)&&/\d/.test(t)&&t.length<=10)) suite.push(t); else break;
+      }
+      r.modele=gam.n.charAt(0)+gam.n.slice(1).toLowerCase()+(suite.length?' '+suite.join(' '):'');
+    }
+
+    /* type */
+    var motsDAI=/\bICD\b|\bS-?ICD\b|CRT-?D\b|DEFIBRIL|CARDIOVERT|\bDAI\b|SUBCUTANEOUS|SOUS-?CUTANE/;
+    var motsPMK=/PACEMAKER|PACE MAKER|STIMULATEUR|\bIPG\b|CRT-?P\b|LEADLESS|SANS SONDE/;
+    var mD=U.match(motsDAI), mP=U.match(motsPMK);
+    if(mD){r.type='dai';r.indices.push('Type : « '+mD[0]+' »');}
+    else if(gam){r.type=gam.t;}
+    else if(mP){r.type='pmk';r.indices.push('Type : « '+mP[0]+' »');}
+    else if(/PACING|STIMULATION/.test(U)){r.type='pmk';r.indices.push('Type : « stimulation » (indice faible)');}
+
+    /* chambres */
+    if(gam&&gam.ch){r.ch=gam.ch;}
+    if(!r.ch&&/\bS-?ICD\b|SUBCUTANEOUS|SOUS-?CUTANE|EMBLEM/.test(U)) r.ch='sc';
+    if(!r.ch&&/LEADLESS|SANS SONDE|MICRA|AVEIR/.test(U)) r.ch=1;
+    if(!r.ch){
+      /* suffixe du modèle : on cherche sur la ligne du modèle, ou sur une ligne qui contient un numéro de modèle */
+      var exclu=/MEDECIN|DOCTEUR|DOCTOR|PHYSICIAN|CARDIOLOG|HOPITAL|HOSPITAL|CLINIQUE|CENTRE|CENTER|\bTEL|PHONE|ADRESSE|ADDRESS|PATIENT|\bNOM\b|NAME/;
+      var cand=lignesOrig.map(function(l,i){
+        return {i:i,s:normaliser(l.replace(/\bDr\.?\s+[A-Z][\w\u00C0-\u017F-]+/g,' ').replace(/\bDr\./gi,' '))};
+      }).filter(function(o){return !exclu.test(o.s)&&(o.i===ligneGam||/MOD|TYPE|MRI|SURESCAN|\bXT\b|ICD|CRT|\d{3,}/.test(o.s));});
+      cand.some(function(o){
+        var m=o.s.match(/\b(CRT-?[DP]|HF(-T)?|QUAD|QUADRA|X4|CRT)\b/);
+        if(m) r.ch=3;
+        else if((m=o.s.match(/\b(DR|DC|DDDR?)\b/))) r.ch=2;
+        else if((m=o.s.match(/\b(SR|VR|SC|VVIR?|AAIR?|SSIR?)\b/))) r.ch=1;
+        if(r.ch) r.indices.push('Chambres : suffixe « '+m[0]+' »');
+        return !!r.ch;
+      });
+    }
+    if(!r.ch){
+      /* positions des sondes listées sur la carte */
+      var a=/\bOD\b|OREILLETTE|ATRI|\bRA\b|AURICUL/.test(U),
+          v=/\bVD\b|\bRV\b|VENTRICULE DROIT|RIGHT VENTRIC/.test(U),
+          gch=/\bVG\b|\bLV\b|VENTRICULE GAUCHE|LEFT VENTRIC|SINUS CORONAIRE|CORONARY SINUS|ATTAIN|ACUITY|QUARTET|NAVIGO|SENTUS/.test(U);
+      if(gch){r.ch=3;r.indices.push('Chambres : sonde ventriculaire gauche listée');}
+      else if(a&&v){r.ch=2;r.indices.push('Chambres : sondes OD + VD listées');}
+      else if(a||v){r.ch=1;r.indices.push('Chambres : une seule position de sonde listée');}
+    }
+    r.modele=r.modele.slice(0,40);
+    return r;
+  }
+
+  function chargerScript(src){
+    return new Promise(function(ok,ko){
+      if(window.Tesseract) return ok();
+      var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=function(){ko(new Error('script'));};
+      document.head.appendChild(s);
+    });
+  }
+  function etat(html,pct){
+    var p=document.getElementById('scan-panel');
+    p.classList.remove('cache');
+    p.innerHTML='<div class="scan-etat">'+html+'</div>'+(pct!=null?'<div class="barre-ocr"><div style="width:'+Math.round(pct*100)+'%"></div></div>':'');
+  }
+  function preparerMoteur(){
+    if(ocrPret) return ocrPret;
+    ocrPret=chargerScript(OCR.script).then(function(){
+      return Tesseract.createWorker('eng',1,{
+        workerPath:OCR.workerPath, corePath:OCR.corePath, langPath:OCR.langPath,
+        logger:function(m){
+          var lib={'loading tesseract core':'Chargement du moteur…','initializing tesseract':'Initialisation…','loading language traineddata':'Chargement du dictionnaire…','initializing api':'Initialisation…','recognizing text':'Lecture de la carte…'}[m.status];
+          if(lib) etat(lib,m.progress);
+        }
+      });
+    }).then(function(w){ocrWorker=w;return w;},function(e){ocrPret=null;throw e;});
+    return ocrPret;
+  }
+
+  /* image : redimensionnée, niveaux de gris, contraste étiré */
+  function preparerImage(file){
+    return new Promise(function(ok,ko){
+      var url=URL.createObjectURL(file), im=new Image();
+      im.onload=function(){
+        var k=Math.min(1,2000/Math.max(im.naturalWidth,im.naturalHeight));
+        var c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+        var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
+        var d=x.getImageData(0,0,c.width,c.height),px=d.data,h=new Array(256).fill(0),i,n=px.length/4;
+        for(i=0;i<px.length;i+=4){var y=(px[i]*299+px[i+1]*587+px[i+2]*114)/1000|0;px[i]=y;h[y]++;}
+        var lo=0,hi=255,acc=0;for(lo=0;lo<255;lo++){acc+=h[lo];if(acc>n*0.01)break;}acc=0;for(hi=255;hi>0;hi--){acc+=h[hi];if(acc>n*0.01)break;}
+        var sp=Math.max(1,hi-lo);
+        for(i=0;i<px.length;i+=4){var v=Math.max(0,Math.min(255,(px[i]-lo)*255/sp));px[i]=px[i+1]=px[i+2]=v;}
+        x.putImageData(d,0,0);
+        ok({canvas:c,url:url});
+      };
+      im.onerror=function(){ko(new Error('image'));};
+      im.src=url;
+    });
+  }
+
+  var dernierScan=null;
+  function lancerScan(file){
+    if(!file) return;
+    etat(ocrWorker?'Lecture de la carte…':'Premier usage : téléchargement du moteur de lecture (≈ 4 Mo)…',0);
+    document.getElementById('scan-panel').scrollIntoView({block:'center'});
+    var img;
+    preparerImage(file).then(function(r){img=r;return preparerMoteur();})
+    .then(function(w){return w.recognize(img.canvas);})
+    .then(function(res){
+      var r=analyser(res.data.text||'');
+      res=null;
+      URL.revokeObjectURL(img.url); img.canvas.width=img.canvas.height=0; img=null;
+      document.getElementById('scan-input').value='';
+      dernierScan={r:r};
+      afficherResultat();
+    })
+    .catch(function(e){
+      if(img){URL.revokeObjectURL(img.url);img.canvas.width=img.canvas.height=0;img=null;}
+      document.getElementById('scan-input').value='';
+      var p=document.getElementById('scan-panel');
+      p.innerHTML='<div class="scan-etat erreur"><b>'+(e&&e.message==='script'?'Moteur de lecture non téléchargé.':'La lecture a échoué.')+'</b><br>'+
+        (e&&e.message==='script'?'Une connexion internet est nécessaire au premier usage.':'Reprenez la photo : carte à plat, droite, bien éclairée, sans reflet.')+
+        '</div><button class="scan-btn sec" data-scan-again>📷 Reprendre la photo</button>';
+    });
+  }
+
+  function opt(v,lib,sel){return '<option value="'+v+'"'+(String(sel)===String(v)?' selected':'')+'>'+lib+'</option>';}
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function afficherResultat(){
+    var r=dernierScan.r, p=document.getElementById('scan-panel');
+    var trouve=function(v){return v?'<span class="ok-ic">✓ lu</span>':'<span class="ko-ic">? à compléter</span>';};
+    p.innerHTML=
+      '<div class="scan-res">'+
+        '<div class="scan-champs">'+
+          '<label><span class="lbl">Appareil '+trouve(r.type)+'</span><select id="sc-type">'+opt('','—',r.type||'')+opt('pmk','PMK (pacemaker)',r.type)+opt('dai','DAI (défibrillateur, stimule aussi)',r.type)+'</select></label>'+
+          '<label><span class="lbl">Chambres '+trouve(r.ch)+'</span><select id="sc-ch">'+opt('','—',r.ch||'')+opt(1,'Simple chambre',r.ch)+opt(2,'Double chambre',r.ch)+opt(3,'Triple (resynchronisation)',r.ch)+opt('sc','Sous-cutané (S-ICD)',r.ch)+'</select></label>'+
+          '<label><span class="lbl">Marque '+trouve(r.marque)+'</span><select id="sc-marque">'+opt('','— autre / inconnue',r.marque||'')+
+            Object.keys(NOMS).map(function(k){return opt(k,NOMS[k],r.marque);}).join('')+'</select></label>'+
+          '<label><span class="lbl">Modèle '+trouve(r.modele)+'</span><input id="sc-modele" type="text" value="'+esc(r.modele)+'" placeholder="ex. Evera XT DR"></label>'+
+        '</div>'+
+      '</div>'+
+      (r.indices.length?'<p class="petit">Indices : '+r.indices.map(esc).join(' · ')+'</p>':'<p class="petit">Aucun indice reconnu : complétez à la main ou reprenez la photo.</p>')+
+      '<p class="petit">Vérifiez avant de valider : la lecture automatique peut se tromper.</p>'+
+      '<p class="petit">🔒 Seuls les mots-clés de l\'appareil sont retenus. L\'identité du patient n\'est ni conservée, ni affichée ; la photo est effacée dès la lecture.</p>'+
+      '<div class="scan-actions"><button class="scan-btn" id="sc-valider">Valider</button><button class="scan-btn sec" data-scan-again>📷 Reprendre</button></div>';
+    var vb=document.getElementById('sc-valider');
+    function maj(){vb.disabled=!document.getElementById('sc-type').value;}
+    document.getElementById('sc-type').addEventListener('change',maj);maj();
+    vb.addEventListener('click',valider);
+  }
+
+  function valider(){
+    var t=document.getElementById('sc-type').value, ch=document.getElementById('sc-ch').value,
+        m=document.getElementById('sc-marque').value, mod=document.getElementById('sc-modele').value.trim();
+    if(!t) return;
+    document.getElementById('scan-panel').classList.add('cache');
+    choisir(t);
+    /* chambre surlignée */
+    var carte=document.getElementById('carte-'+t);
+    carte.querySelectorAll('.chambres .hl').forEach(function(x){x.classList.remove('hl');});
+    var clef={'1':'Simple','2':'Double','3':'Triple','sc':'Sous-cutané'}[ch];
+    if(clef) carte.querySelectorAll('.chambres b').forEach(function(b){if(b.textContent.trim()===clef){b.classList.add('hl');b.nextElementSibling.classList.add('hl');}});
+    /* fiche marque */
+    if(m){plusMarque=m;rendreMarques();devPlus(t);}
+    /* bandeau */
+    var chLib={'1':'simple chambre','2':'double chambre','3':'triple chambre (resynchronisation)','sc':'sous-cutané'}[ch]||'chambres non précisées';
+    var bd=document.getElementById('carte-lue');
+    bd.innerHTML='<b>📇 Carte lue</b><br>'+(t==='dai'?'DAI':'PMK')+' · '+chLib+(m?' · '+NOMS[m]:'')+(mod?'<br><span class="petit">'+esc(mod)+'</span>':'')+
+      (m?'<br><a href="#loin" class="lien-fiche">Voir la fiche '+NOMS[m]+' →</a>':'<br><span class="petit">Marque non reconnue : pas de fiche spécifique.</span>');
+    bd.classList.remove('cache');
+    setTimeout(function(){bd.scrollIntoView({block:'start'});},80);
+  }
+  function effacerScan(){
+    var bd=document.getElementById('carte-lue'); if(bd) bd.classList.add('cache');
+    document.querySelectorAll('.chambres .hl').forEach(function(x){x.classList.remove('hl');});
+  }
+
+  var inp=document.getElementById('scan-input');
+  document.getElementById('scan-btn').addEventListener('click',function(){inp.value='';inp.click();});
+  inp.addEventListener('change',function(){lancerScan(inp.files[0]);});
+  document.getElementById('scan-panel').addEventListener('click',function(e){
+    if(e.target.closest('[data-scan-again]')){inp.value='';inp.click();}
+  });
+  window.__analyserCarte=analyser; /* pour tests */
+  window.__effacerScan=effacerScan;
+
+  /* ================= CAS ================= */
+  document.querySelectorAll('.cas').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('vu')})});
+})();
+</script>
+</body>
+</html>
