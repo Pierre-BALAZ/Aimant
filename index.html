@@ -11,7 +11,7 @@
   --rouge:#c62828; --rouge-pale:#fdecea; --vert:#2e7d32; --vert-pale:#e8f5e9;
   --orange:#d35400; --orange-pale:#fff3e0;
   --fond:#f4f6fa; --carte:#ffffff; --texte:#1a1f2b; --gris:#5b6475; --bord:#d8dee9;
-  --trace:#1a1f2b; --grille:#f3c6c6; --ecg-fond:#fffafa;
+  --trace:#1a1f2b; --grille:#f3c6c6; --ecg-fond:#fffafa; --violet:#6a3fb5;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -19,7 +19,7 @@
     --rouge:#ff6b6b; --rouge-pale:#3a1c1c; --vert:#66bb6a; --vert-pale:#1b2e1c;
     --orange:#ffa040; --orange-pale:#3a2a14;
     --fond:#0f131a; --carte:#181e29; --texte:#e7ebf2; --gris:#9aa4b5; --bord:#2a3242;
-    --trace:#7CFC9A; --grille:#1f3a2a; --ecg-fond:#07120c;
+    --trace:#7CFC9A; --grille:#1f3a2a; --ecg-fond:#07120c; --violet:#b48cff;
   }
 }
 *{box-sizing:border-box}
@@ -75,6 +75,12 @@ details summary{cursor:pointer;font-weight:600;color:var(--bleu)}
 .choisir.sel .gb{background:#fff;color:var(--bleu)}
 .choisir.dai.sel{background:var(--rouge)}
 .choisir.dai.sel .gb{color:var(--rouge)}
+.choisir.crt{grid-column:1/-1;min-height:0;border-color:var(--violet);color:var(--violet)}
+.choisir.crt .gb{background:var(--violet);padding:4px 26px}
+.choisir.crt .gs{max-width:34em;text-align:center}
+.choisir.crt.sel{background:var(--violet);color:#fff}
+.choisir.crt.sel .gb{color:var(--violet)}
+.badge.crt{background:var(--violet)}
 .choisir.sel .gs{color:rgba(255,255,255,.85)}
 .gros-choix.fait .choisir{min-height:96px}
 .gros-choix.fait .choisir:not(.sel){opacity:.55}
@@ -231,6 +237,7 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
   <div class="gros-choix">
     <button class="choisir" data-dev="pmk"><span class="gb">PMK</span><span class="gt">C'est un PMK</span><span class="gs">Pacemaker</span></button>
     <button class="choisir dai" data-dev="dai"><span class="gb">DAI</span><span class="gt">C'est un DAI</span><span class="gs">Défibrillateur</span></button>
+    <button class="choisir crt" data-dev="crt"><span class="gb">?</span><span class="gt">Je ne sais pas</span><span class="gs">Le patient me dit que c'est un défibrillateur, mais je vois des spikes</span></button>
   </div>
   <button class="scan-btn" id="scan-btn">📷 Scanner la carte de porteur</button>
   <input type="file" id="scan-input" accept="image/*" capture="environment" hidden>
@@ -257,7 +264,7 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
 
       <h4>Nombre de chambres</h4>
       <div class="chambres">
-        <b>Simple</b><span>1 sonde : oreillette (AAI) ou, le plus souvent, ventricule droit (VVI).</span>
+        <b>Simple</b><span>1 sonde : ventricule droit (VVI).</span>
         <b>Double</b><span>2 sondes : oreillette + ventricule droits (DDD). Respecte la séquence auriculo-ventriculaire.</span>
         <b>Triple</b><span>+ sonde ventriculaire gauche (sinus coronaire) = resynchronisation (CRT-P), pour l'insuffisance cardiaque.</span>
       </div>
@@ -270,10 +277,7 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
       </ul>
 
       <details>
-        <summary>Tracés AAI / VVI / DDD</summary>
-        <span class="ecg-l code">AAI</span>
-        <p class="petit">Écoute et stimule l'oreillette ; s'inhibe si onde P détectée.</p>
-        <div data-trace="aai"></div>
+        <summary>Tracés VVI / DDD</summary>
         <span class="ecg-l code">VVI</span>
         <p class="petit">Idem, au ventricule.</p>
         <div data-trace="vvi"></div>
@@ -306,6 +310,24 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
       </ul>
     </div>
 
+    <div class="carte fiche-app dev-crt" id="carte-crt">
+      <h3><span class="badge crt">CRT-D</span> DAI de resynchronisation</h3>
+      <p>C'est bien un <b>défibrillateur</b>… qui est <b>aussi un pacemaker</b> triple chambre.</p>
+      <ul>
+        <li><b>3 sondes</b> : OD + VD (porte le coil de choc) + <b>VG</b> par le sinus coronaire.</li>
+        <li>Il <b>stimule les deux ventricules en permanence</b> pour les resynchroniser (insuffisance cardiaque avec BBG) : un spike devant <b>quasiment chaque QRS</b>, c'est <b>normal</b>.</li>
+        <li>Fonction DAI identique : tachycardie jugée ventriculaire → <b>ATP</b> puis <b>choc</b>.</li>
+      </ul>
+      <p class="petit">Un DAI simple ou double chambre peut aussi stimuler, mais seulement en cas de bradycardie : spikes intermittents. Sans sonde de choc (pas de coil à la radio), c'est un CRT-P = pacemaker de resynchronisation : choisir « C'est un PMK ».</p>
+
+      <h4>Reconnaître un dysfonctionnement</h4>
+      <ul>
+        <li><b>Perte des spikes</b> (QRS propres, larges) → perte de la resynchronisation : décompensation cardiaque possible.</li>
+        <li><b>Chocs répétés chez un patient conscient</b> en rythme organisé → chocs inappropriés.</li>
+        <li><b>Chocs répétés sur vraies TV/FV</b> → orage rythmique.</li>
+      </ul>
+    </div>
+
 <!-- ================= 2. AIMANT ================= -->
 <h2 class="titre" id="aimant">2. L'aimant : indication, pose, effet attendu</h2>
 <div id="aimant-corps">
@@ -320,10 +342,10 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
     <h3>Poser l'aimant</h3>
     <label class="coche"><input type="checkbox"><span>Scope + défibrillateur, <b>patchs posés</b> (antéro-postérieurs, à distance du boîtier).</span></label>
     <label class="coche"><input type="checkbox"><span>Palper le boîtier (le plus souvent sous-claviculaire gauche).</span></label>
-    <label class="coche"><input type="checkbox"><span>Aimant posé <b>directement sur le boîtier</b>. <span class="dev-dai">Certaines marques de DAI demandent une position décentrée : voir « Pour aller plus loin ».</span></span></label>
+    <label class="coche"><input type="checkbox"><span>Aimant posé <b>directement sur le boîtier</b>. <span class="dev-dai dev-crt">Certaines marques de DAI demandent une position décentrée : voir « Pour aller plus loin ».</span></span></label>
     <label class="coche"><input type="checkbox"><span>Le <b>maintenir</b> (scotché si besoin) : l'effet cesse en général au retrait.</span></label>
     <label class="coche"><input type="checkbox"><span>Obésité, boîtier profond : parfois <b>2 aimants</b> nécessaires.</span></label>
-    <label class="coche dev-dai"><input type="checkbox"><span>Écouter : un <b>bip</b> confirme la suspension des thérapies (Boston Scientific et Medtronic uniquement).</span></label>
+    <label class="coche dev-dai dev-crt"><input type="checkbox"><span>Écouter : un <b>bip</b> confirme la suspension des thérapies (Boston Scientific et Medtronic uniquement).</span></label>
   </div>
 
   <div class="carte">
@@ -338,7 +360,19 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
       <p>Les <b>thérapies tachycardie</b> (ATP, chocs) sont <b>suspendues</b>. La <b>stimulation anti-bradycardie n'est pas modifiée</b> (pas de passage en asynchrone, sauf particularité Sorin / MicroPort).</p>
       <div data-trace="aimant-dai"></div>
       <p class="petit">Exemple : artefacts de fracture de sonde pris pour une FV → choc inapproprié. Sous aimant, les artefacts persistent mais le DAI ne choque plus.</p>
-      <p>Si TV / FV sous aimant : <b>choc électrique externe</b> par les patchs.</p>
+    </div>
+    <div class="dev-crt">
+      <p>L'aimant a <b>l'effet des deux</b> :</p>
+      <ul>
+        <li>Fonction <b>DAI suspendue</b> : ni ATP ni choc.</li>
+        <li>Fonction <b>PMK conservée en mode automatique</b> (son mode programmé, pas d'asynchrone) : la resynchronisation continue, les spikes persistent.</li>
+      </ul>
+      <div data-trace="aimant-crt"></div>
+    </div>
+    <div class="dev-dai dev-crt">
+      <div class="carte alerte" style="margin:10px 0 0">
+        <b>Besoin de choquer (TV / FV) ? Retirez l'aimant.</b><br>Le DAI reprend la main et choque lui-même : c'est mieux toléré et plus efficace qu'un choc électrique externe. Les patchs restent le recours si le DAI échoue.
+      </div>
     </div>
   </div>
 
@@ -348,7 +382,7 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
       <li>Retrait de l'aimant = <b>retour à la programmation initiale</b> (rares exceptions : voir marques).</li>
       <li>Laisser l'aimant pendant le transport si l'indication persiste.</li>
       <li>Orientation vers un centre pouvant <b>interroger l'appareil</b>.</li>
-      <li>Transmettre : marque, modèle, heure de pose, effet observé<span class="dev-dai">, chocs reçus</span>.</li>
+      <li>Transmettre : marque, modèle, heure de pose, effet observé<span class="dev-dai dev-crt">, chocs reçus</span>.</li>
     </ul>
   </div>
 </div>
@@ -386,7 +420,7 @@ footer{text-align:center;font-size:.76rem;color:var(--gris);padding:10px 16px 30
   <h3>Cas 1</h3>
   <p>Homme 68 ans, porteur de DAI. A reçu 5 chocs en 15 min. Conscient, angoissé. Scope : rythme sinusal 85/min.</p>
   <p><b>Que faites-vous ?</b></p>
-  <div class="rep carte ok"><b>Aimant sur le DAI.</b> Chocs inappropriés chez un patient vigile en rythme sinusal → suspicion de fracture de sonde / sur-détection. Patchs posés, choc externe si TV/FV. Interrogation du DAI.</div>
+  <div class="rep carte ok"><b>Aimant sur le DAI.</b> Chocs inappropriés chez un patient vigile en rythme sinusal → suspicion de fracture de sonde / sur-détection. Patchs posés ; si TV/FV : retirer l'aimant, le DAI choque (patchs en recours). Interrogation du DAI.</div>
 </div>
 <div class="carte cas">
   <h3>Cas 2</h3>
@@ -493,6 +527,11 @@ Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des excep
       var ev=[{t:'r',x:15},{t:'r',x:100},{t:'bruit',x:165,w:72},{t:'choc',x:250},{t:'r',x:275},{t:'bruit',x:370,w:72},{t:'r',x:460},{t:'r',x:540}];
       var t=traceAbs(ev), m=marque(345,'Aimant ON',96); haut(349,'pas de choc','n l2');
       return svgAnime(t+m,96,7);
+    },
+    'aimant-crt':function(){
+      var ev=[{t:'v',x:12},{t:'v',x:92},{t:'bruit',x:165,w:66},{t:'choc',x:242},{t:'v',x:262},{t:'v',x:342},{t:'bruit',x:412,w:56},{t:'v',x:478},{t:'v',x:548}];
+      var t=traceAbs(ev), m=marque(326,'Aimant ON',96); haut(330,'pas de choc','n l2');
+      return svgAnime(t+m,96,7);
     }
   };
   function dessiner(root){
@@ -515,11 +554,21 @@ Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des excep
     ],
     dai:[
       {c:'v',q:"Chocs multiples chez un patient conscient, en rythme organisé",r:"Chocs inappropriés (fracture de sonde, sur-détection, TSV) : l'aimant suspend les thérapies."},
-      {c:'v',q:"Orage rythmique ne répondant pas aux thérapies du DAI",r:"Prendre la main : aimant + patchs, choc électrique externe si TV/FV, traitement de l'orage."},
+      {c:'v',q:"Orage rythmique ne répondant pas aux thérapies du DAI",r:"Le DAI échoue : prendre la main par aimant + patchs (choc électrique externe), traitement de l'orage."},
       {c:'v',q:"Soins palliatifs / LATA",r:"Suspendre les chocs pour le confort, en attendant une désactivation par programmation."},
       {c:'o',q:"Choc unique, patient asymptomatique",r:"Pas d'indication de l'aimant : surveillance scopée et interrogation du DAI."},
       {c:'o',q:"Bradycardie chez un porteur de DAI",r:"L'aimant ne modifie pas la stimulation anti-bradycardie (sauf Sorin / MicroPort). Inutile : stimulation externe si besoin."},
-      {c:'r',q:"Aimant sans scope ni défibrillateur externe prêt",r:"Le patient perd sa protection contre la mort subite. Toujours scope + patchs posés avant l'aimant."}
+      {c:'r',q:"Aimant sans scope ni défibrillateur externe prêt",r:"Le patient perd sa protection contre la mort subite. Toujours scope + patchs posés avant l'aimant."},
+      {c:'r',q:"TV / FV sous aimant, aimant laissé en place",r:"Retirer l'aimant : le DAI choque lui-même, mieux toléré qu'un choc externe. Patchs en recours."}
+    ],
+    crt:[
+      {c:'v',q:"Chocs multiples chez un patient conscient, en rythme organisé",r:"Chocs inappropriés : l'aimant suspend les chocs, la resynchronisation continue."},
+      {c:'v',q:"Orage rythmique ne répondant pas aux thérapies du DAI",r:"Le DAI échoue : prendre la main par aimant + patchs (choc électrique externe), traitement de l'orage."},
+      {c:'v',q:"Soins palliatifs / LATA",r:"Suspend les chocs ; la stimulation (confort hémodynamique) est conservée."},
+      {c:'o',q:"Spikes devant chaque QRS, patient stable",r:"Fonctionnement normal de la resynchronisation. L'aimant n'y change rien."},
+      {c:'o',q:"Perte des spikes, décompensation cardiaque",r:"L'aimant ne restaure pas la stimulation sur un DAI (pas d'asynchrone). Traitement de l'insuffisance cardiaque, interrogation de l'appareil."},
+      {c:'r',q:"Aimant sans scope ni défibrillateur externe prêt",r:"Le patient perd sa protection contre la mort subite. Toujours scope + patchs posés avant l'aimant."},
+      {c:'r',q:"TV / FV sous aimant, aimant laissé en place",r:"Retirer l'aimant : le DAI choque lui-même, mieux toléré qu'un choc externe. Patchs en recours."}
     ]
   };
 
@@ -530,9 +579,8 @@ Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des excep
     document.querySelector('.gros-choix').classList.add('fait');
     var der=document.getElementById('deroule');
     der.classList.add('cache'); void der.offsetWidth; der.classList.remove('cache');
-    der.querySelectorAll('.dev-pmk').forEach(function(x){x.classList.toggle('cache',d!=='pmk')});
-    der.querySelectorAll('.dev-dai').forEach(function(x){x.classList.toggle('cache',d!=='dai')});
-    document.getElementById('ind-titre').innerHTML=(d==='pmk'?'<span class="badge">PMK</span>':'<span class="badge dai">DAI</span>')+' Quelle est la situation ?';
+    der.querySelectorAll('.dev-pmk,.dev-dai,.dev-crt').forEach(function(x){x.classList.toggle('cache',!x.classList.contains('dev-'+d));});
+    document.getElementById('ind-titre').innerHTML={pmk:'<span class="badge">PMK</span>',dai:'<span class="badge dai">DAI</span>',crt:'<span class="badge crt">CRT-D</span>'}[d]+' Quelle est la situation ?';
     var html='';
     SITU[d].forEach(function(s){
       html+='<div class="situ '+s.c+'"><div class="q">'+s.q+'</div><div class="rep"><span class="verdict">'+VERDICT[s.c]+'</span>'+s.r+'</div></div>';
@@ -540,7 +588,7 @@ Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des excep
     document.getElementById('situations').innerHTML=html;
     der.querySelectorAll('input').forEach(function(i){i.checked=false;i.closest('.coche').classList.remove('cochee')});
     der.querySelectorAll('details').forEach(function(x){x.open=false});
-    devPlus(d);
+    devPlus(d==='crt'?'dai':d);
     setTimeout(function(){document.getElementById('normal').scrollIntoView({block:'start'});},30);
   }
   document.querySelectorAll('[data-dev]').forEach(function(b){b.addEventListener('click',function(){choisir(b.dataset.dev);if(window.__effacerScan)window.__effacerScan();})});
@@ -931,9 +979,10 @@ Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des excep
         m=document.getElementById('sc-marque').value, mod=document.getElementById('sc-modele').value.trim();
     if(!t) return;
     document.getElementById('scan-panel').classList.add('cache');
-    choisir(t);
+    var dev=(t==='dai'&&ch==='3')?'crt':t;
+    choisir(dev);
     /* chambre surlignée */
-    var carte=document.getElementById('carte-'+t);
+    var carte=document.getElementById('carte-'+dev);
     carte.querySelectorAll('.chambres .hl').forEach(function(x){x.classList.remove('hl');});
     var clef={'1':'Simple','2':'Double','3':'Triple','sc':'Sous-cutané'}[ch];
     if(clef) carte.querySelectorAll('.chambres b').forEach(function(b){if(b.textContent.trim()===clef){b.classList.add('hl');b.nextElementSibling.classList.add('hl');}});
@@ -942,7 +991,7 @@ Ce document concerne la majorité des PMK/DAI, mais pas la totalité : des excep
     /* bandeau */
     var chLib={'1':'simple chambre','2':'double chambre','3':'triple chambre (resynchronisation)','sc':'sous-cutané'}[ch]||'chambres non précisées';
     var bd=document.getElementById('carte-lue');
-    bd.innerHTML='<b>📇 Carte lue</b><br>'+(t==='dai'?'DAI':'PMK')+' · '+chLib+(m?' · '+NOMS[m]:'')+(mod?'<br><span class="petit">'+esc(mod)+'</span>':'')+
+    bd.innerHTML='<b>📇 Carte lue</b><br>'+(dev==='crt'?'DAI de resynchronisation (CRT-D)':(t==='dai'?'DAI':'PMK'))+' · '+chLib+(m?' · '+NOMS[m]:'')+(mod?'<br><span class="petit">'+esc(mod)+'</span>':'')+
       (m?'<br><a href="#loin" class="lien-fiche">Voir la fiche '+NOMS[m]+' →</a>':'<br><span class="petit">Marque non reconnue : pas de fiche spécifique.</span>');
     bd.classList.remove('cache');
     setTimeout(function(){bd.scrollIntoView({block:'start'});},80);
